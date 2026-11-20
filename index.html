@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>LO Finding</title>
+  <meta name="description" content="Find the exact Cambridge learning objectives for your lesson, with AKT levels, teaching suggestions, differentiation and assessments.">
+  <meta name="theme-color" content="#1E5AA8">
+  <!-- PWA: bisa dipasang di HP (Android/iOS) & laptop -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="LO Finding">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231E5AA8'/%3E%3Cpath d='M6 17.5V7a1.5 1.5 0 0 1 1.5-1.5H16v10H7.5A1.5 1.5 0 0 0 6 17.5z' fill='none' stroke='white' stroke-width='1.8'/%3E%3Ccircle cx='11' cy='10' r='2' fill='none' stroke='%2359D38C' stroke-width='1.8'/%3E%3C/svg%3E">
+  <!-- Koneksi awal lebih cepat (Prinsip 9) -->
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Poppins:wght@500;600;700&display=swap">
+  <!-- Terapkan tema terakhir SEBELUM halaman tampil (tanpa kedip warna) -->
+  <script>
+    (function () {
+      try {
+        var t = JSON.parse(localStorage.getItem('lof:theme') || 'null'); if (!t) return;
+        var r = document.documentElement; r.dataset.mode = t.dark ? 'dark' : 'light'; r.dataset.preset = t.preset || 'default';
+        for (var k in t.vars) r.style.setProperty(k, t.vars[k]);
+        var m = document.querySelector('meta[name=theme-color]'); if (m && t.vars['--nav-bg']) m.content = t.vars['--nav-bg'];
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=2.0.1">
+  <script src="js/config.js?v=2.0.1" defer></script>
+  <script src="js/icons.js?v=2.0.1" defer></script>
+  <script src="js/core.js?v=2.0.1" defer></script>
+  <script src="js/guru.js?v=2.0.1" defer></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Kerangka awal: tampil instan sebelum JavaScript siap -->
+    <div id="boot-skeleton" aria-hidden="true">
+      <div style="height:64px;background:var(--nav-bg,#1E5AA8)"></div>
+      <div style="max-width:960px;margin:28px auto;padding:0 16px">
+        <div class="sk" style="height:26px;width:40%;margin-bottom:18px"></div>
+        <div class="sk" style="height:300px;border-radius:12px"></div>
+      </div>
+    </div>
+  </div>
+  <div id="toasts" aria-live="polite"></div>
+  <noscript><p style="padding:24px;font-family:sans-serif">Please enable JavaScript to use LO Finding.</p></noscript>
+</body>
+</html>

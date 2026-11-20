@@ -1,0 +1,23 @@
+{
+  "name": "LO Finding — Cambridge Learning Objectives",
+  "short_name": "LO Finding",
+  "description": "Find Cambridge learning objectives with AKT levels, teaching steps, differentiation and assessments.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1E5AA8",
+  "lang": "en",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Find LO", "url": "./index.html#/cari", "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "History", "url": "./index.html#/riwayat", "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
