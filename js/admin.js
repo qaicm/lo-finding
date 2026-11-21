@@ -488,7 +488,7 @@ registerPage('a-guru', {
 // =========================================================
 // PENGATURAN (umum, kuota, AI, kode akses, tampilan, akun admin, keamanan)
 // =========================================================
-const SET_TABS = [['umum', 'General', 'settings'], ['kuota', 'Quotas', 'clock'], ['ai', 'AI', 'sparkles'], ['kode', 'Access Code', 'key-round'], ['tampilan', 'Appearance', 'palette'], ['akun', 'Admin Accounts', 'users'], ['aman', 'Security', 'shield-check']];
+const SET_TABS = [['umum', 'General', 'settings'], ['kuota', 'Quotas', 'clock'], ['ai', 'AI', 'sparkles'], ['tpl', 'Teaching Templates', 'layers'], ['kode', 'Access Code', 'key-round'], ['tampilan', 'Appearance', 'palette'], ['akun', 'Admin Accounts', 'users'], ['aman', 'Security', 'shield-check']];
 const COLOR_ROWS = [['primary', 'Primary', 'Header, primary buttons'], ['primaryDark', 'Primary dark', 'Sidebar, hover'], ['accent', 'Accent', 'Verified, success'], ['accentSoft', 'Accent soft', 'Soft highlights'], ['bg', 'Background', 'Cards'], ['surface', 'Secondary background', 'Page background'], ['text', 'Text', 'Body text']];
 registerPage('a-set', {
   layout: 'admin', auth: 'admin', title: 'Settings', nav: 'a-set',
@@ -514,7 +514,12 @@ registerPage('a-set', {
       '<h4 class="mt-l">Lists</h4><p class="help">Separate items with commas.</p><div class="col mt-s">' + this.field('DAFTAR_PROGRAM', 'Programs') + this.field('DAFTAR_MAPEL', 'Subjects') + this.field('DAFTAR_UNIT', 'Units') + this.field('DAFTAR_TERM', 'Terms') + '</div>' + save + '</div>';
     if (this.tab === 'kuota') b.innerHTML = '<div class="card"><h3 class="mb">Quotas</h3><div class="grid grid-2">' + this.field('KUOTA_AI_GURU', 'AI searches per teacher per day', 'number') + this.field('KUOTA_AI_SEKOLAH', 'AI searches per school per day', 'number') + this.field('KUOTA_UNGGAH_GURU', 'Uploads per teacher per day', 'number') + this.field('KUOTA_HALAMAN_HARIAN', 'Extraction pages per day (school)', 'number') + '</div><div class="alert info mt">' + ic('mail') + '<div class="small">Email quota left today for OTP & notifications: <b>' + d.emailSisa + '</b>. Gmail accounts allow about 100/day, Google Workspace about 1,500/day.</div></div>' + save + '</div>';
     if (this.tab === 'ai') b.innerHTML = '<div class="card"><h3 class="mb">AI (Gemini)</h3><div class="field"><label class="label">Gemini API key</label><div class="row"><input class="input" type="password" autocomplete="off" data-key placeholder="' + esc(d.rahasia.gemini.ada ? d.rahasia.gemini.samar : 'Not set') + '"' + (isSA() ? '' : ' disabled') + '>' + (isSA() ? '<button class="btn btn-primary" data-act="savekey">Save key</button>' : '') + '</div><div class="help">Stored securely in Script Properties — never shown again in full. Get a key at Google AI Studio.</div></div>' +
-      '<div class="mt">' + (d.rahasia.gemini.ada ? '<span class="pill ok">' + ic('circle-check', 'ic-s') + 'Key configured</span>' : '<span class="pill bad">Key missing — AI features are off</span>') + '</div><div class="mt-l">' + this.field('GEMINI_MODEL', 'Model', 'text', 'Change when Google releases a newer model (e.g. a newer "flash" version).') + '</div>' + save + '</div>';
+      '<div class="mt">' + (d.rahasia.gemini.ada ? '<span class="pill ok">' + ic('circle-check', 'ic-s') + 'Key configured</span>' : '<span class="pill bad">Key missing — AI features are off</span>') + '</div><div class="mt-l">' + this.field('GEMINI_MODEL', 'Model', 'text', 'Change when Google releases a newer model (e.g. a newer "flash" version). If you hit quota errors, a Flash-Lite model has larger free limits.') + '</div></div>' + this.modeCard() + save;
+    if (this.tab === 'tpl') this.drawTpl(b);
+    if (this.tab === 'ai') {
+      $$('[data-modes] input', b).forEach(i => i.addEventListener('change', () => { $('[data-s=MODE_AI]', b).value = i.value; $$('.mode-opt', b).forEach(l => l.classList.toggle('on', l.contains(i))); }));
+      this.cacheStat(el);
+    }
     if (this.tab === 'kode') b.innerHTML = '<div class="card"><h3 class="mb">Guest access code</h3><p class="small muted">For trainings and guests. Guests can search LOs but cannot upload. Teachers normally sign in with their email.</p>' + this.field('KODE_AKSES_AKTIF', 'Enable guest access code', 'yn', 'Active') +
       '<div class="grid grid-2 mt">' + this.field('KODE_AKSES_BERLAKU', 'Valid until', 'date') + this.field('KODE_AKSES_MAKS', 'Max uses', 'number') + '</div>' +
       (isSA() ? '<div class="card mt" style="background:var(--surface)"><div class="row between wrap"><div><div class="tiny muted">Current code</div><div class="mono" style="font-size:24px;letter-spacing:3px">' + esc((d.kodeAkses || {}).kode || '— none —') + '</div><div class="tiny muted">Used ' + ((d.kodeAkses || {}).dipakai || 0) + ' times</div></div><div class="row">' + ((d.kodeAkses || {}).kode ? '<button class="btn btn-outline btn-sm" data-act="copycode">' + ic('copy', 'ic-s') + 'Copy</button>' : '') + '<button class="btn btn-primary btn-sm" data-act="gencode">' + ic('refresh-cw', 'ic-s') + 'Generate</button></div></div></div>' : '') + save + '</div>';
@@ -522,6 +527,55 @@ registerPage('a-set', {
     if (this.tab === 'akun') this.drawAkun(b);
     if (this.tab === 'aman') b.innerHTML = '<div class="card"><h3 class="mb">Security</h3><div class="col"><button class="btn btn-outline" style="justify-content:flex-start" data-act="pw">' + ic('key-round') + 'Change my password</button><button class="btn btn-outline-danger" style="justify-content:flex-start" data-act="outall">' + ic('log-out') + 'Sign out of all devices</button></div>' +
       '<div class="alert info mt">' + ic('info') + '<div class="small">All secrets (API key, token secret, password hashes) are stored in Apps Script <b>Script Properties</b>, never in the spreadsheet or the website code. Keep the Apps Script project editors to a minimum.' + (d.akunScript ? ' Script owner: <b>' + esc(d.akunScript) + '</b>.' : '') + '</div></div></div>';
+  },
+  /** v2.1: cara pencarian dijawab — hibrida / AI saja / template saja */
+  modeCard() {
+    const m = String((this.d.settings || {}).MODE_AI || 'HIBRIDA').toUpperCase(), dis = isSA() ? '' : ' disabled';
+    const opt = [['HIBRIDA', 'Hybrid', 'Recommended', 'Reuses saved AI results for the same topic, calls AI otherwise, and builds the result from the LO Bank and teaching templates when AI is unavailable or the quota runs out. Teachers never see a quota error.'],
+      ['AI', 'AI only', '', 'Always asks AI for a fresh result. Teachers see an error when AI is unavailable or the quota is used up.'],
+      ['TEMPLATE', 'Templates only', 'No API key needed', 'Never calls AI: free and instant. LOs are matched by keyword; steps, differentiation and assessments come from your teaching templates and past-paper bank.']];
+    return '<div class="card mt"><h3 class="mb">How searches are answered</h3><input type="hidden" data-s="MODE_AI" value="' + m + '"><div class="col gap-s" data-modes>' +
+      opt.map(o => '<label class="mode-opt' + (m === o[0] ? ' on' : '') + '"><input type="radio" name="mode_ai" value="' + o[0] + '"' + (m === o[0] ? ' checked' : '') + dis + '><span><b>' + o[1] + '</b>' + (o[2] ? ' <span class="pill ' + (o[0] === 'HIBRIDA' ? 'ok' : 'info') + '">' + o[2] + '</span>' : '') + '<span class="help" style="display:block;margin-top:2px">' + o[3] + '</span></span></label>').join('') + '</div>' +
+      '<div class="grid grid-2 mt">' + this.field('CACHE_HASIL_HARI', 'Keep saved AI results for (days)', 'number', 'Saved results are refreshed automatically when the LO Bank for that subject changes.') + '<div data-cstat class="field"><label class="label">Today</label><div class="small muted">Loading…</div></div></div>' +
+      (isSA() ? '<div class="row wrap mt-s"><button class="btn btn-ghost btn-sm" data-act="clearcache">' + ic('trash-2', 'ic-s') + 'Clear saved AI results</button><a class="btn btn-ghost btn-sm" href="#/a-set/tpl">' + ic('layers', 'ic-s') + 'Edit teaching templates</a></div>' : '') + '</div>';
+  },
+  async cacheStat(el) {
+    const box = $('[data-cstat]', el); if (!box) return;
+    const r = await api('cacheAI.stats', {}); if (!r.success || !$('[data-cstat]', el)) return;
+    const h = r.data.hariIni;
+    box.innerHTML = '<label class="label">Today</label><div class="row wrap gap-s"><span class="pill info">' + ic('sparkles', 'ic-s') + h.ai + ' AI</span><span class="pill ok">' + ic('history', 'ic-s') + h.cache + ' saved</span><span class="pill">' + ic('layers', 'ic-s') + h.template + ' template</span></div><div class="help">' + r.data.tersimpan + ' saved AI result(s) ready to reuse.</div>';
+  },
+  async drawTpl(b) {
+    b.innerHTML = '<div class="card">' + skeletonRows(6) + '</div>';
+    const r = await api('template.list', {});
+    if (this.tab !== 'tpl') return;                 // pengguna sudah pindah tab sebelum data tiba
+    if (!r.success) { b.innerHTML = errorBox(r); return; }
+    this.tpl = r.data.items;
+    const card = (t) => '<div class="tpl-item"><div class="row between gap-s"><div><b>' + esc(t.label) + '</b>' + (t.diubah ? ' <span class="pill info">Customised</span>' : '') + '</div>' + (isSA() ? '<button class="btn btn-ghost btn-sm" data-act="tpledit" data-k="' + t.kunci + '">' + ic('pencil', 'ic-s') + 'Edit</button>' : '') + '</div>' +
+      '<div class="small muted tpl-prev">' + esc(t.jenis === 'di' ? t.inti : t.inti.split('\n')[0]) + '</div></div>';
+    b.innerHTML = '<div class="card"><h3>Teaching templates</h3><p class="small muted mt-s">Used whenever a result is built without AI (Templates-only mode, or Hybrid when AI is unavailable). Each LO uses the template of its cognitive level (C1–C6); the lesson gets one differentiation cell.</p>' +
+      (r.data.mode === 'AI' ? '<div class="alert info mt">' + ic('info') + '<div class="small">Search mode is <b>AI only</b>, so templates are not used until you switch to Hybrid or Templates only (Settings → AI).</div></div>' : '') +
+      '<h4 class="mt-l mb-s">By AKT cognitive level</h4><div class="tpl-grid">' + this.tpl.filter(t => t.jenis === 'akt').map(card).join('') + '</div>' +
+      '<h4 class="mt-l mb-s">Differentiated Instruction (3 × 3)</h4><div class="tpl-grid">' + this.tpl.filter(t => t.jenis === 'di').map(card).join('') + '</div></div>';
+  },
+  tplModal(el, t) {
+    const di = t.jenis === 'di', ta = (k, l, rows, help) => '<div class="field"><label class="label">' + l + '</label><textarea class="textarea mono" name="' + k + '" rows="' + rows + '">' + esc(t[k] || '') + '</textarea>' + (help ? '<div class="help">' + help + '</div>' : '') + '</div>';
+    const ph = 'Placeholders: <code>{topik}</code> topic · <code>{kode}</code> LO code · <code>{lo}</code> LO statement · <code>{bab}</code> coursebook chapter' + (di ? '' : ' · minutes <code>{o}</code> <code>{o2}</code> opening, <code>{a}</code> <code>{b}</code> <code>{c}</code> main, <code>{z}</code> closing. Keep one step per line starting with the minutes.');
+    const m = modal('Template — ' + t.label, '<p class="help mb">' + ph + '</p>' + (di ? ta('pembuka', 'Why this cell (reason)', 2) + ta('inti', 'Classroom example', 3)
+      : ta('pembuka', 'Opening', 3) + ta('inti', 'Main activities', 4) + ta('penutup', 'Closing', 2) + ta('formatif', 'Formative assessment', 2) + ta('sumatif', 'Summative assessment (used when no past-paper item matches)', 2)),
+      (t.diubah ? '<button class="btn btn-ghost" data-reset>' + ic('rotate-ccw', 'ic-s') + 'Restore default</button>' : '') + '<div class="spacer" style="flex:1"></div><button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" data-ok>' + ic('check') + 'Save template</button>', { wide: true });
+    const v = (n) => { const x = $('[name=' + n + ']', m.el); return x ? x.value : ''; };
+    $('[data-ok]', m.el).onclick = async (e) => {
+      btnBusy(e.currentTarget, true, 'Saving');
+      const r = await api('template.simpan', { kunci: t.kunci, label: t.label, pembuka: v('pembuka'), inti: v('inti'), penutup: v('penutup'), formatif: v('formatif'), sumatif: v('sumatif') });
+      btnBusy(e.currentTarget, false); if (!r.success) return toast(r.message, 'err');
+      m.close(); toast(r.message); this.drawTpl($('[data-body]', el));
+    };
+    const rs = $('[data-reset]', m.el); if (rs) rs.onclick = async () => {
+      if (!(await confirmBox('Restore the default template?', 'Your changes to "' + t.label + '" will be replaced by the built-in text.', 'Restore'))) return;
+      const r = await api('template.reset', { kunci: t.kunci }); if (!r.success) return toast(r.message, 'err');
+      m.close(); toast(r.message); this.drawTpl($('[data-body]', el));
+    };
   },
   drawTheme(b) {
     const cur = Theme.school(); this.tl = Object.assign({}, Theme.DEFAULT.light, cur.light); this.td = Object.assign({}, Theme.DEFAULT.dark, cur.dark);
@@ -594,6 +648,11 @@ registerPage('a-set', {
   acts: {
     retry(b, e, el) { this.show(el); },
     tab(b, e, el) { this.tab = b.dataset.t; this.draw(el); },
+    tpledit(b, e, el) { const t = (this.tpl || []).find(x => x.kunci === b.dataset.k); if (t) this.tplModal(el, t); },
+    async clearcache(b, e, el) {
+      if (!(await confirmBox('Clear saved AI results?', 'New searches will call AI again until results are saved. Teachers\' own search history is not affected.', 'Clear', true))) return;
+      const r = await api('cacheAI.hapus', {}); toast(r.message, r.success ? 'ok' : 'err'); this.cacheStat(el);
+    },
     async saveset(b, e, el) {
       const s = {}; $$('[data-s]', el).forEach(i => s[i.dataset.s] = i.type === 'checkbox' ? (i.checked ? 'Y' : 'N') : i.value.trim());
       btnBusy(b, true, 'Saving'); const r = await api('pengaturan.simpan', { settings: s }); btnBusy(b, false);

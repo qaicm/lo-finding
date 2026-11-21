@@ -7,7 +7,7 @@
 
 const CFG = window.APP_CONFIG || {};
 const GAS_URL = String(CFG.GAS_URL || '');
-const APP_VER = '2.0.1';   // versi aset (config.js tidak perlu diubah saat update)
+const APP_VER = '2.1.0';   // versi aset (config.js tidak perlu diubah saat update)
 const CONFIG_OK = /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(GAS_URL) && !/GANTI|XXXX/.test(GAS_URL);
 
 // ---------------------------------------------------------
@@ -717,7 +717,7 @@ const PWA = {
   ios() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); },
   can() { return !this.standalone() && (!!this.evt || this.ios()); },
   init() {
-    if ('serviceWorker' in navigator && location.protocol === 'https:' && !window.MOCK_API) navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW:', e.message));
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && !window.MOCK_API) navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW:', e.message));
     window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this.evt = e; refreshShellUser(); });
     window.addEventListener('appinstalled', () => { this.evt = null; refreshShellUser(); toast('App installed. Open it from your home screen.'); });
     refreshShellUser();

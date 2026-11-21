@@ -124,6 +124,7 @@ registerPage('cari', {
       return;
     }
     const data = r.data; data.dif_ai = data.pencarian.diferensiasi;
+    if (data.sumber === 'template' && data.sumberAlasan) toast('AI unavailable (' + data.sumberAlasan + ') — result built from templates.', 'info');
     cacheSet('hasil:' + data.pencarian.pencarian_id, data);
     if (AppState.boot) { AppState.boot.kuota = Object.assign({}, AppState.boot.kuota, data.kuota || {}); AppState.boot.riwayat = [{ pencarian_id: data.pencarian.pencarian_id, waktu: data.pencarian.waktu, topik: d.topik, grade: d.stage, kelas: d.kelas, jumlah_period: d.period, kode: data.hasil.filter(h => h.dipilih).map(h => h.kode_lo) }].concat(AppState.boot.riwayat || []); cacheSet('boot', AppState.boot); }
     cacheDel('riwayat');
@@ -178,7 +179,11 @@ registerPage('hasil', {
       '<div class="card period-card"><div class="card-h"><h4>' + ic('clock') + 'Period Counter</h4></div><div data-counter></div></div>' +
       '<div class="card"><div class="card-h"><h4>' + ic('layers') + 'Differentiated Instruction</h4></div><div data-di></div></div>' +
       '<div class="card"><div class="card-h"><h4>' + ic('chart-column') + 'AKT summary</h4></div><div data-aktsum></div></div></div>';
-    $('[data-wrap]', el).innerHTML = head + '<div class="res-layout"><div data-cards>' + cards + '</div>' + side + '</div>' +
+    // v2.1: asal hasil — AI baru, hasil AI tersimpan, atau template tanpa AI
+    const src = p.sumber || d.sumber || 'ai', why = d.sumberAlasan || '';
+    const note = src === 'template' ? '<div class="alert info mb no-print src-note">' + ic('layers') + '<div class="small"><b>Built from the LO Bank and school teaching templates</b>' + (why ? ' (' + esc(why) + ')' : ' (AI not used)') + '. LOs were matched by keyword and AKT levels come from the LO Bank. Review the steps and adapt them to your class — every field is editable.</div></div>'
+      : src === 'cache' ? '<div class="small muted mb no-print">' + ic('history', 'ic-s') + ' Saved AI result reused from an earlier search on the same topic — instant, no AI quota used.</div>' : '';
+    $('[data-wrap]', el).innerHTML = head + note + '<div class="res-layout"><div data-cards>' + cards + '</div>' + side + '</div>' +
       '<div class="mobile-bar no-print"><div><div class="tiny muted">Periods</div><div class="bold" data-mcount></div></div><button class="btn btn-primary btn-sm" data-act="pdf">' + ic('download', 'ic-s') + 'PDF</button></div>';
     this.bind(el); this.refreshSide(el); this.saveState(el, 'saved');
   },
@@ -194,7 +199,7 @@ registerPage('hasil', {
       '<div class="lo-body"' + (open ? '' : ' hidden') + '><div class="tabs" role="tablist"><button class="on" data-act="tab" data-tab="t">Teaching</button><button data-act="tab" data-tab="a">Assessment</button><button data-act="tab" data-tab="s">Sources</button></div>' +
       '<div data-pane="t">' + this.mini('Opening', 'pembuka', h) + this.mini('Main', 'inti', h) + this.mini('Closing', 'penutup', h) + (h.rujukan_ebook ? '<span class="ref">' + ic('book-open', 'ic-s') + esc(h.rujukan_ebook) + '</span>' : '') + '</div>' +
       '<div data-pane="a" hidden>' + this.mini('Formative', 'formatif', h, h.formatif_akt) + this.mini('Summative', 'sumatif', h, h.sumatif_akt) + (h.rujukan_soal ? '<span class="ref">' + ic('file-text', 'ic-s') + 'Inspired by ' + esc(h.rujukan_soal) + '</span>' : '') + '</div>' +
-      '<div data-pane="s" hidden><dl class="kv-list"><dt>LO status</dt><dd>' + (st ? 'Verified by QA admin' : 'From your own source — not yet verified') + '</dd><dt>Strand</dt><dd>' + esc(h.strand || '—') + '</dd><dt>Coursebook</dt><dd>' + esc(h.rujukan_ebook || '—') + '</dd><dt>Past paper</dt><dd>' + esc(h.rujukan_soal || '—') + '</dd><dt>AI periods</dt><dd>' + (h.saran_period || '—') + '</dd></dl></div></div></article>';
+      '<div data-pane="s" hidden><dl class="kv-list"><dt>LO status</dt><dd>' + (st ? 'Verified by QA admin' : 'From your own source — not yet verified') + '</dd><dt>Strand</dt><dd>' + esc(h.strand || '—') + '</dd><dt>Coursebook</dt><dd>' + esc(h.rujukan_ebook || '—') + '</dd><dt>Past paper</dt><dd>' + esc(h.rujukan_soal || '—') + '</dd><dt>Suggested periods</dt><dd>' + (h.saran_period || '—') + '</dd></dl></div></div></article>';
   },
   mini(label, f, h, akt) {
     const rows = Math.min(10, Math.max(3, String(h[f] || '').split('\n').length + 1));
@@ -248,7 +253,7 @@ registerPage('hasil', {
     DI.rows.forEach((r, ri) => { g += '<span class="rh">' + r + '</span>'; DI.cols.forEach((c, ci) => { const n = ri * 3 + ci + 1; g += '<button data-act="di" data-n="' + n + '" class="' + (n === cur ? 'on' : '') + '" title="' + r + ' × ' + c + '" aria-pressed="' + (n === cur) + '">' + n + (n === rec ? '<svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z"/></svg>' : '') + '</button>'; }); });
     g += '</div><p class="small mt"><b>' + esc(diName(cur)) + '</b>' + (cur === rec ? ' <span class="pill ok">Recommended</span>' : '') + '</p>' +
       (cur === rec && p.diferensiasi_alasan ? '<p class="small muted">' + esc(p.diferensiasi_alasan) + '</p>' : '') +
-      (cur === rec && p.diferensiasi_contoh ? '<div class="mini small"><b>Example:</b> ' + esc(p.diferensiasi_contoh) + '</div>' : '') + '<p class="tiny muted">Select only one cell. ★ = AI recommendation.</p>';
+      (cur === rec && p.diferensiasi_contoh ? '<div class="mini small"><b>Example:</b> ' + esc(p.diferensiasi_contoh) + '</div>' : '') + '<p class="tiny muted">Select only one cell. ★ = recommended.</p>';
     $('[data-di]', el).innerHTML = g;
     const cnt = [0, 0, 0, 0, 0, 0]; sel.forEach(h => { const a = String(h.akt_final || ''); if (/^[FCPM]C[1-6]$/.test(a)) cnt[+a[2] - 1]++; });
     const mx = Math.max(1, ...cnt);
