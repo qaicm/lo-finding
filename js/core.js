@@ -7,7 +7,7 @@
 
 const CFG = window.APP_CONFIG || {};
 const GAS_URL = String(CFG.GAS_URL || '');
-const APP_VER = '2.1.0';   // versi aset (config.js tidak perlu diubah saat update)
+const APP_VER = '2.2.0';   // versi aset (config.js tidak perlu diubah saat update)
 const CONFIG_OK = /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(GAS_URL) && !/GANTI|XXXX/.test(GAS_URL);
 
 // ---------------------------------------------------------
@@ -55,8 +55,8 @@ window.Perf = Perf;
 // ---------------------------------------------------------
 // API client (Prinsip 8)
 // ---------------------------------------------------------
-const READ_ACTIONS = /^(ping|publik\.config|guru\.boot|lo\.detail|lo\.riwayat|lo\.pdf|sumber\.(cekTautan|tabelDariSheet|saya|status|hasil)|admin\.(boot|dashboard|antrean)|bank\.list|dokumen\.list|laporan\.\w+|guruAdm\.list|pengaturan\.get|akunAdmin\.list|tema\.riwayat|ekspor\.integrasi|batch|notif\.(config|queue)|wa\.(device|audience|blastList|validate)|crm\.(list|stats|detail|duplikat|export))$/;
-const LONG = { 'lo.cari': 150000, 'sumber.unggah': 200000, 'sumber.imporTabel': 170000, 'lo.pdf': 90000, 'lo.email': 90000, 'ekspor.integrasi': 90000, 'migrasi.import': 330000, 'wa.blastProcess': 90000, 'notif.processNow': 90000 };
+const READ_ACTIONS = /^(ping|publik\.config|guru\.boot|lo\.detail|lo\.riwayat|analisis\.(riwayat|detail)|lo\.pdf|sumber\.(cekTautan|tabelDariSheet|saya|status|hasil)|admin\.(boot|dashboard|antrean)|bank\.list|dokumen\.list|laporan\.\w+|guruAdm\.list|pengaturan\.get|akunAdmin\.list|tema\.riwayat|ekspor\.integrasi|batch|notif\.(config|queue)|wa\.(device|audience|blastList|validate)|crm\.(list|stats|detail|duplikat|export))$/;
+const LONG = { 'lo.cari': 150000, 'analisis.jalankan': 150000, 'sumber.unggah': 200000, 'sumber.imporTabel': 170000, 'lo.pdf': 90000, 'lo.email': 90000, 'ekspor.integrasi': 90000, 'migrasi.import': 330000, 'wa.blastProcess': 90000, 'notif.processNow': 90000 };
 
 async function apiOnce(action, data, timeout, reqId) {
   if (window.MOCK_API) { const t0 = performance.now(); const r = await window.MOCK_API(action, data, AppState.token, reqId); Perf.add(action, Math.round(performance.now() - t0), r.ms, r.cached); return r; }
@@ -394,13 +394,13 @@ function ensureShell(layout) {
   const root = document.createElement('div'); root.className = 'shell shell-' + layout;
   if (layout === 'auth') root.innerHTML = '<div class="view"></div>';
   if (layout === 'guru') {
-    const nav = [['cari', 'search', 'Find LO'], ['unggah', 'upload', 'Upload Source'], ['dokumen', 'folder-open', 'My Documents'], ['riwayat', 'history', 'History']];
+    const nav = [['cari', 'search', 'Find LO'], ['analisis', 'microscope', 'Analyze LO/TP'], ['unggah', 'upload', 'Upload Source'], ['dokumen', 'folder-open', 'My Documents'], ['riwayat', 'history', 'History']];
     root.innerHTML = '<header class="topnav"><a class="brand" href="#/cari"><span class="logo">' + LOGO + '</span><span data-appname>' + esc(appName()) + '</span></a><nav aria-label="Main">' +
       nav.map(n => '<a href="#/' + n[0] + '" data-nav="' + n[0] + '">' + ic(n[1]) + n[2] + (n[0] === 'dokumen' ? '<span class="badge" data-badge="dok" hidden></span>' : '') + '</a>').join('') +
       '</nav><div class="spacer"></div><a class="icon-btn" href="#/a-dash" data-adminlink title="Admin panel" aria-label="Admin panel" hidden>' + ic('layout-dashboard') + '</a><button class="icon-btn" data-theme-icon data-act-global="theme"></button>' +
       '<div><button class="user-btn" data-act-global="user"><span class="avatar" data-avatar>?</span><span class="name" data-username></span>' + ic('chevron-down', 'ic-s') + '</button></div></header>' +
       '<main class="main"><div class="view"></div></main>' +
-      '<nav class="bottomnav" aria-label="Main">' + nav.map(n => '<a href="#/' + n[0] + '" data-nav="' + n[0] + '">' + ic(n[1]) + '<span>' + n[2].replace(' Source', '').replace('My ', '') + '</span>' + (n[0] === 'dokumen' ? '<span class="badge" data-badge="dok" hidden></span>' : '') + '</a>').join('') + '</nav>';
+      '<nav class="bottomnav" aria-label="Main">' + nav.map(n => '<a href="#/' + n[0] + '" data-nav="' + n[0] + '">' + ic(n[1]) + '<span>' + n[2].replace(' Source', '').replace('My ', '').replace(' LO/TP', '') + '</span>' + (n[0] === 'dokumen' ? '<span class="badge" data-badge="dok" hidden></span>' : '') + '</a>').join('') + '</nav>';
   }
   if (layout === 'admin') {
     const S = (k, i, l, b) => '<a class="nav" href="#/' + k + '" data-nav="' + k + '">' + ic(i) + '<span>' + l + '</span>' + (b ? '<span class="badge" data-badge="' + b + '" hidden></span>' : '') + '</a>';

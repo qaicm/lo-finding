@@ -2,10 +2,10 @@
    - Kerangka aplikasi (HTML/CSS/JS/ikon) disimpan agar terbuka instan & tetap tampil saat sinyal lemah.
    - Permintaan ke Google Apps Script (data) TIDAK PERNAH di-cache: selalu langsung ke server.
    - Naikkan VERSI setiap kali file frontend diperbarui → cache lama otomatis dibuang. */
-const VERSI = 'lof-2.1.0';
+const VERSI = 'lof-2.2.0';
 const SHELL = [
   './', './index.html', './manifest.json',
-  './css/style.css?v=2.1.0', './js/config.js?v=2.1.0', './js/icons.js?v=2.1.0', './js/core.js?v=2.1.0', './js/guru.js?v=2.1.0',
+  './css/style.css?v=2.2.0', './js/config.js?v=2.2.0', './js/icons.js?v=2.2.0', './js/core.js?v=2.2.0', './js/guru.js?v=2.2.0', './js/analisis.js?v=2.2.0',
   './icons/icon-192.png', './icons/icon-512.png'
 ];
 
